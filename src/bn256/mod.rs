@@ -7,7 +7,7 @@ mod fq6;
 mod fr;
 
 #[cfg(feature = "asm")]
-mod assembly;
+pub(crate) mod assembly;
 
 pub use curve::*;
 pub use engine::*;

@@ -34,7 +34,7 @@ f = open("src/bn256/fr/table.rs", "w")
 f.write("//! auto generated file from scripts/bn256.sage, do not modify\n")
 f.write("//! see src/bn256/fr.rs for more details\n")
 f.write("use super::Fr;\n")
-f.write("pub const FR_TABLE: [Fr; " + hex(table_size) + "] = [\n")
+f.write("pub const FR_TABLE: &[Fr] = &[\n")
 
 for i in range(table_size):
     a = (i * R) % modulus
