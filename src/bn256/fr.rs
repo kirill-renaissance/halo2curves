@@ -16,7 +16,7 @@ mod table_tests;
 pub use table::FR_TABLE;
 
 #[cfg(not(feature = "bn256-table"))]
-use crate::impl_from_u64;
+use crate::impl_from_u64_u32;
 
 use crate::arithmetic::{adc, bigint_geq, mac, sbb};
 use crate::extend_field_legendre;
@@ -169,7 +169,7 @@ impl_sum_prod!(Fr);
 extend_field_legendre!(Fr);
 
 #[cfg(not(feature = "bn256-table"))]
-impl_from_u64!(Fr, R2);
+impl_from_u64_u32!(Fr, R2);
 #[cfg(feature = "bn256-table")]
 // A field element is represented in the montgomery form -- this allows for cheap mul_mod operations.
 // The catch is, if we build an Fr element, regardless of its format, we need to perform one big integer multiplication:
@@ -186,6 +186,16 @@ impl From<u64> for Fr {
             FR_TABLE[val as usize]
         } else {
             Fr([val, 0, 0, 0]) * R2
+        }
+    }
+}
+#[cfg(feature = "bn256-table")]
+impl From<u32> for Fr {
+    fn from(val: u32) -> Fr {
+        if val < 65536 {
+            FR_TABLE[val as usize]
+        } else {
+            Fr([val as u64, 0, 0, 0]) * R2
         }
     }
 }

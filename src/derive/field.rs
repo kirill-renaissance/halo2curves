@@ -1,9 +1,15 @@
 #[macro_export]
-macro_rules! impl_from_u64 {
+macro_rules! impl_from_u64_u32 {
     ($field:ident, $r2:ident) => {
         impl From<u64> for $field {
             fn from(val: u64) -> $field {
                 $field([val, 0, 0, 0]) * $r2
+            }
+        }
+
+        impl From<u32> for $field {
+            fn from(val: u32) -> $field {
+                $field([val as u64, 0, 0, 0]) * $r2
             }
         }
     };

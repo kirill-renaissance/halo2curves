@@ -9,7 +9,7 @@ use crate::ff::{FromUniformBytes, PrimeField, WithSmallOrderMulGroup};
 use crate::{
     field_bits, field_common, impl_add_binop_specify_output, impl_binops_additive,
     impl_binops_additive_specify_output, impl_binops_multiplicative,
-    impl_binops_multiplicative_mixed, impl_from_u64, impl_sub_binop_specify_output, impl_sum_prod,
+    impl_binops_multiplicative_mixed, impl_from_u64_u32, impl_sub_binop_specify_output, impl_sum_prod,
 };
 use core::convert::TryInto;
 use core::fmt;
@@ -143,7 +143,7 @@ field_common!(
     R3
 );
 impl_sum_prod!(Fq);
-impl_from_u64!(Fq, R2);
+impl_from_u64_u32!(Fq, R2);
 
 #[cfg(not(feature = "asm"))]
 field_arithmetic!(Fq, MODULUS, INV, sparse);

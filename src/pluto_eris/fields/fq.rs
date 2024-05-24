@@ -2,7 +2,7 @@ use crate::arithmetic::{adc, mac, sbb};
 use crate::ff::{FromUniformBytes, PrimeField, WithSmallOrderMulGroup};
 use crate::{
     extend_field_legendre, field_arithmetic_7_limbs, field_bits_7_limbs, field_common_7_limbs,
-    impl_from_u64_7_limbs,
+    impl_from_u64_u32_7_limbs,
 };
 use crate::{
     impl_add_binop_specify_output, impl_binops_additive, impl_binops_additive_specify_output,
@@ -184,7 +184,7 @@ field_common_7_limbs!(
     R3
 );
 impl_sum_prod!(Fq);
-impl_from_u64_7_limbs!(Fq, R2);
+impl_from_u64_u32_7_limbs!(Fq, R2);
 field_arithmetic_7_limbs!(Fq, MODULUS, INV, sparse);
 
 #[cfg(target_pointer_width = "64")]
