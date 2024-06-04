@@ -37,13 +37,13 @@ macro_rules! field_common {
 
         impl $field {
             /// Returns zero, the additive identity.
-            #[inline]
+            #[inline(always)]
             pub const fn zero() -> $field {
                 $field([0, 0, 0, 0])
             }
 
             /// Returns one, the multiplicative identity.
-            #[inline]
+            #[inline(always)]
             pub const fn one() -> $field {
                 $r
             }
@@ -136,7 +136,8 @@ macro_rules! field_common {
 
                 $field([d0, d1, d2, d3])
             }
-
+            
+            #[inline(always)]
             fn from_u512(limbs: [u64; 8]) -> $field {
                 // We reduce an arbitrary 512-bit number by decomposing it into two 256-bit digits
                 // with the higher bits multiplied by 2^256. Thus, we perform two reductions
@@ -160,18 +161,21 @@ macro_rules! field_common {
 
             /// Converts from an integer represented in little endian
             /// into its (congruent) `$field` representation.
+            #[inline(always)]
             pub const fn from_raw(val: [u64; 4]) -> Self {
                 Self::montgomery_form(val, $r2)
             }
 
             /// Attempts to convert a little-endian byte representation of
             /// a scalar into a `Fr`, failing if the input is not canonical.
+            #[inline(always)]
             pub fn from_bytes(bytes: &[u8; 32]) -> CtOption<$field> {
                 <Self as ff::PrimeField>::from_repr(*bytes)
             }
 
             /// Converts an element of `Fr` into a byte representation in
             /// little-endian byte order.
+            #[inline(always)]
             pub fn to_bytes(&self) -> [u8; 32] {
                 <Self as ff::PrimeField>::to_repr(self)
             }
@@ -206,6 +210,7 @@ macro_rules! field_common {
         }
 
         impl From<bool> for $field {
+            #[inline(always)]
             fn from(bit: bool) -> $field {
                 if bit {
                     $field::one()
@@ -216,6 +221,7 @@ macro_rules! field_common {
         }
 
         impl ConstantTimeEq for $field {
+            #[inline(always)]
             fn ct_eq(&self, other: &Self) -> Choice {
                 self.0[0].ct_eq(&other.0[0])
                     & self.0[1].ct_eq(&other.0[1])
@@ -225,6 +231,7 @@ macro_rules! field_common {
         }
 
         impl core::cmp::Ord for $field {
+            #[inline(always)]
             fn cmp(&self, other: &Self) -> core::cmp::Ordering {
                 let left = self.to_repr();
                 let right = other.to_repr();
@@ -240,12 +247,14 @@ macro_rules! field_common {
         }
 
         impl core::cmp::PartialOrd for $field {
+            #[inline(always)]
             fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
                 Some(self.cmp(other))
             }
         }
 
         impl ConditionallySelectable for $field {
+            #[inline(always)]
             fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
                 $field([
                     u64::conditional_select(&a.0[0], &b.0[0], choice),
@@ -259,7 +268,7 @@ macro_rules! field_common {
         impl<'a> Neg for &'a $field {
             type Output = $field;
 
-            #[inline]
+            #[inline(always)]
             fn neg(self) -> $field {
                 self.neg()
             }
@@ -268,7 +277,7 @@ macro_rules! field_common {
         impl Neg for $field {
             type Output = $field;
 
-            #[inline]
+            #[inline(always)]
             fn neg(self) -> $field {
                 -&self
             }
@@ -277,7 +286,7 @@ macro_rules! field_common {
         impl<'a, 'b> Sub<&'b $field> for &'a $field {
             type Output = $field;
 
-            #[inline]
+            #[inline(always)]
             fn sub(self, rhs: &'b $field) -> $field {
                 self.sub(rhs)
             }
@@ -286,7 +295,7 @@ macro_rules! field_common {
         impl<'a, 'b> Add<&'b $field> for &'a $field {
             type Output = $field;
 
-            #[inline]
+            #[inline(always)]
             fn add(self, rhs: &'b $field) -> $field {
                 self.add(rhs)
             }
@@ -295,37 +304,43 @@ macro_rules! field_common {
         impl<'a, 'b> Mul<&'b $field> for &'a $field {
             type Output = $field;
 
-            #[inline]
+            #[inline(always)]
             fn mul(self, rhs: &'b $field) -> $field {
                 self.mul(rhs)
             }
         }
 
         impl From<[u64; 4]> for $field {
+            #[inline(always)]
             fn from(digits: [u64; 4]) -> Self {
                 Self::from_raw(digits)
             }
         }
 
         impl From<$field> for [u8; 32] {
+            #[inline(always)]
             fn from(value: $field) -> [u8; 32] {
                 value.to_repr()
             }
         }
 
         impl<'a> From<&'a $field> for [u8; 32] {
+            #[inline(always)]
             fn from(value: &'a $field) -> [u8; 32] {
                 value.to_repr()
             }
         }
 
         impl $crate::serde::SerdeObject for $field {
+            #[inline(always)]
             fn from_raw_bytes_unchecked(bytes: &[u8]) -> Self {
                 debug_assert_eq!(bytes.len(), 32);
                 let inner =
                     [0, 8, 16, 24].map(|i| u64::from_le_bytes(bytes[i..i + 8].try_into().unwrap()));
                 Self(inner)
             }
+
+            #[inline(always)]
             fn from_raw_bytes(bytes: &[u8]) -> Option<Self> {
                 if bytes.len() != 32 {
                     return None;
@@ -333,6 +348,8 @@ macro_rules! field_common {
                 let elt = Self::from_raw_bytes_unchecked(bytes);
                 Self::is_less_than(&elt.0, &$modulus.0).then(|| elt)
             }
+
+            #[inline(always)]
             fn to_raw_bytes(&self) -> Vec<u8> {
                 let mut res = Vec::with_capacity(32);
                 for limb in self.0.iter() {
@@ -340,6 +357,8 @@ macro_rules! field_common {
                 }
                 res
             }
+
+            #[inline(always)]
             fn read_raw_unchecked<R: std::io::Read>(reader: &mut R) -> Self {
                 let inner = [(); 4].map(|_| {
                     let mut buf = [0; 8];
@@ -348,6 +367,8 @@ macro_rules! field_common {
                 });
                 Self(inner)
             }
+
+            #[inline(always)]
             fn read_raw<R: std::io::Read>(reader: &mut R) -> std::io::Result<Self> {
                 let mut inner = [0u64; 4];
                 for limb in inner.iter_mut() {
@@ -365,6 +386,8 @@ macro_rules! field_common {
                         )
                     })
             }
+
+            #[inline(always)]
             fn write_raw<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
                 for limb in self.0.iter() {
                     writer.write_all(&limb.to_le_bytes())?;
@@ -382,7 +405,7 @@ macro_rules! field_arithmetic {
 
         impl $field {
             /// Doubles this field element.
-            #[inline]
+            #[inline(always)]
             pub const fn double(&self) -> $field {
                 self.add(self)
             }
@@ -559,6 +582,7 @@ macro_rules! field_arithmetic {
         }
 
         impl From<$field> for [u64; 4] {
+            #[inline(always)]
             fn from(elt: $field) -> [u64; 4] {
                 // Turn into canonical form by computing
                 // (a.R) / R = a
@@ -723,7 +747,8 @@ macro_rules! field_bits {
 
                 ::ff::FieldBits::new(limbs)
             }
-
+            
+            #[inline(always)]
             fn char_le_bits() -> ::ff::FieldBits<Self::ReprBits> {
                 ::ff::FieldBits::new($modulus.0)
             }
